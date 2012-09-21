@@ -1,0 +1,24 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=4224
+
+If you downrate the plugin, let me know why you don't like the simple hack 
+[mszamot AT gmail DOT com].
+
+In vim (not gvim) when you execute command via ":!command" you go back and 
+forth to a terminal. Some times you'd like to avoid this and you'd rather use 
+":echo system('command')" but that's a lot of typing, there is no completion 
+and % is not expanded (for some this might be a feature actually). With this 
+plugin when you type ":! command" (note the space between "!" and the command) 
+the command will be executed as ":echo system('command')".  One of the 
+benefits is that you have access to the excellent vim command line completion 
+(for both programs and file names) - something that is inaccessible using 
+"echo system(...)". 
+
+See the script how you can configure it to your needs. The script adds the ":! 
+command" to the history (so in the history you will find both) and removes the ":call system('command')" from it. 
+
+It is very useful, when your background color in vim and terminal are different (for example light terminal and dark vim, in which case executing commands in the terminal will make an annoying flash) 
+
+Thanks to emacscommandline plugin vimscript#3554 I knew how to implement this. 
+
+Happy viming, 
+    Marcin Szamotulski 
