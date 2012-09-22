@@ -9,28 +9,31 @@
 " output. In many situations this is not what you want and you'd prefere 
 " :call system("command")
 " but it is a lot to type, and you don't have completion. With this snipet
-" every command which start with:
+" every command which starts with:
 " :! command
-" a space after the "!" will be wrapped into system() and the output will be
-" echoed.
-" The executed command will also be echoed (on the very top).
+" (note the space after the "!") will be wrapped into system() and the output will be
+" echoed. The plugin refreshes the histry with what you typed rather than the
+" call to the system() function.
 "
 " There is some configuration variables:
 " g:system_expand = 1
 "         by default % (with modifiers) is expanded in the same way as by the :!.
-" g:system_echocmd = 0
-"         echo the command (by default no, since the history looks less visible)
-" g:system_history = 1
-"         add the ':! command' to the history, note that then both commands: 
-"         ':! command' and 'echo system("command")' will be in the history
-"         (the second will be the last one).
+" g:system_echocmd = 1
+"         echo the command together with its output
 "
+" The reason why I like it is that I have different background colors in vim
+" (dark) and terminal (light). If I stay inside vim I am not flushed with
+" bright colors which is a anoying (and eyes tireing).
 "
 " Benefits: you get completion for system commanads and system files.
-
-" Copyright: 2012 Marcin Szamotulski
+" Copyright: © Marcin Szamotulski, 2012
 
 " I learned how to do that reading the emacscommandline plugin.
+"
+" Other plugins with shell like functionality:
+" vim-addon-async by Marc Weber: https://github.com/MarcWeber/vim-addon-async
+" Conque Shell plugin: http://code.google.com/p/conque
+" vimproc plugin: http://github.com/Shougo/vimproc/tree/master/doc/vimproc.txt
 "
 " Happy viming,
 "  Marcin Szamotulski
@@ -40,20 +43,15 @@ if !exists("g:system_expand")
     " If 1 expand % as in the command line.
 endif
 if !exists("g:system_echocmd")
-    let g:system_echocmd = 0
-endif
-if !exists("g:system_history")
-    let g:system_history = 1
+    let g:system_echocmd = 1
 endif
 
 fun! <SID>WrapCmdLine()
     let cmdline = getcmdline()
     " Add cmdline to history
-    if g:system_history
-	call histadd(":", cmdline)
-    endif
     if cmdline[0:1] == "! "  
 	let cmd = cmdline[2:]
+	call histadd(":", cmdline)
 	if g:system_expand
 	    let cmd_split = split(cmd, '\ze\\\@<!%')
 	    let cmd = ""
@@ -68,10 +66,11 @@ fun! <SID>WrapCmdLine()
 	    endfor
 	endif
 	let cmd = escape(cmd, "\"")
+	let his = "|call histdel(':', -1)"
 	if g:system_echocmd
-	    return "echo system(\"".cmd."\")"
+	    return "echo \"".cmd."\n\".system(\"".cmd."\")".his
 	else
-	    return "echo \"".cmd."\n\".system(\"".cmd."\")"
+	    return "echo system(\"".cmd."\")".his
 	endif
     endif
     return cmdline
