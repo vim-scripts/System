@@ -1,6 +1,6 @@
 " Author: Marcin Szamotulski
 " Email:  mszamot [AT] gmail [DOT] com
-" Licence: vim-licence
+" License: vim-license, see :help license
 "
 " This is a tiny vim script which might have been discvered ages ago (but I am
 " unaware). Its rather for vim than gvim users.
@@ -18,15 +18,18 @@
 " There is some configuration variables:
 " g:system_expand = 1
 "         by default % (with modifiers) is expanded in the same way as by the :!.
-" g:system_echocmd = 1
-"         echo the command together with its output
+" g:system_echocmd = 0
+"         echo the command together with its output (by default off)
 "
 " The reason why I like it is that I have different background colors in vim
 " (dark) and terminal (light). If I stay inside vim I am not flushed with
 " bright colors which is a anoying (and eyes tireing).
 "
 " Benefits: you get completion for system commanads and system files.
-" Copyright: © Marcin Szamotulski, 2012
+" Drawbacks: if you want to write a function. You can source the plugin
+" afterwards to restore the cmap (or write a simple toggle map if you do that
+" often). You can use the expression register with Vim 7.3.686.
+" Copyright: © Marcin Szamotulski, 2012-2014
 
 " I learned how to do that reading the emacscommandline plugin.
 "
@@ -43,12 +46,34 @@ if !exists("g:system_expand")
     " If 1 expand % as in the command line.
 endif
 if !exists("g:system_echocmd")
-    let g:system_echocmd = 1
+    let g:system_echocmd = 0
 endif
 
-fun! <SID>WrapCmdLine()
+if !exists('CRDispatcher')
+    let g:CRDispatcher = {}
+    fun g:CRDispatcher.dispatch() dict
+	let cmdtype = getcmdtype()
+	if cmdtype == ':'
+	   if has_key(self, 'expr')
+	       return self.expr()
+	   endif
+	elseif cmdtype == '/'
+	    if has_key(self, 'search')
+		return self.search()
+	    endif
+	endif
+	return getcmdline()
+    endfun
+endif
+if !exists('*CRDispatch')
+    fun CRDispatch()
+	return g:CRDispatcher.dispatch()
+    endfun
+endif
+
+fun! WrapCmdLine() " {{{
     let cmdline = getcmdline()
-    " Add cmdline to history
+    " Add cmdline to the history
     if cmdline[0:1] == "! "  
 	let cmd = cmdline[2:]
 	call histadd(":", cmdline)
@@ -74,5 +99,15 @@ fun! <SID>WrapCmdLine()
 	endif
     endif
     return cmdline
-endfun
-cnoremap <silent> <CR> <C-\>e<SID>WrapCmdLine()<CR><CR>
+endfun " }}}
+
+if empty(maparg('<Plug>CRDispatch', 'c'))
+    cno <Plug>CRDispatch <C-\>eCRDispatch()<CR><CR>
+endif
+" cno <Plug>eWrapCmdLine <C-\>eWrapCmdLine()<CR><CR>
+
+if empty(globpath(&rtp, 'plugin/cmd_alias.vim'))
+    " My cmd_alias.vim plugin will take care of this map.
+    " This is important since both plugins define a cmap to <CR>.
+    CRDispatcher.expr = funcref('WrapCmdLine')
+endif

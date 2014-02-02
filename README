@@ -1,24 +1,58 @@
 This is a mirror of http://www.vim.org/scripts/script.php?script_id=4224
 
-If you downrate the plugin, let me know why you don't like the simple hack 
-[mszamot AT gmail DOT com].
+I# System Vim Plugin
 
-In vim (not gvim) when you execute command via ":!command" you go back and 
-forth to a terminal. Some times you'd like to avoid this and you'd rather use 
-":echo system('command')" but that's a lot of typing, there is no completion 
-and % is not expanded (for some this might be a feature actually). With this 
-plugin when you type ":! command" (note the space between "!" and the command) 
-the command will be executed as ":echo system('command')".  One of the 
-benefits is that you have access to the excellent vim command line completion 
-(for both programs and file names) - something that is inaccessible using 
-"echo system(...)". 
+This is a tiny vim script which might have been discovered ages ago (but I am
+unaware). Its rather for vim than gvim users.
 
-See the script how you can configure it to your needs. The script adds the ":! 
-command" to the history (so in the history you will find both) and removes the ":call system('command')" from it. 
+When executing commands from vim you enter a vim shell where you see the
+output. In many situations this is not what you want and you'd prefer 
+```viml
+    :call system("command")
+```
+but it is a lot to type, and you don't have completion. With this snippet
+every command which starts with:
+```viml
+    :! command
+```
+(note the space after the `!`) will be wrapped into `system()` and the output
+will be echoed. The plugin refreshes the history with what you typed rather
+than the call to the `system()` function.
 
-It is very useful, when your background color in vim and terminal are different (for example light terminal and dark vim, in which case executing commands in the terminal will make an annoying flash) 
+There are some configuration variables:
+```viml
+    g:system_expand = 1
+```
+by default `%` (with modifiers) is expanded in the same way as by the `:!`.
+```viml
+    g:system_echocmd = 0
+```
+echo the command together with its output (by default off).
 
-Thanks to emacscommandline plugin vimscript#3554 I knew how to implement this. 
+The reason why I like it is that I have different background colors in vim
+(dark) and terminal (light). If I stay inside vim I am not flushed with
+bright colors which is a annoying (and may be eyes tiring).
 
-Happy viming, 
-    Marcin Szamotulski 
+Benefits: you get completion for system commands and system files.
+
+You can use the expression register with Vim 7.3.686.  With an earlier version
+you will not be able to use it.
+
+# Requirements
+You have to also install [CRDispatcher](https://github.com/coot/CRDispatcher)
+plugin.
+
+I learned how to do that reading the
+[EmacsCommandLine Plugin](https://github.com/houtsnip/vim-emacscommandline).
+
+Other plugins with shell like functionality:
+* [vim-addon-async](https://github.com/MarcWeber/vim-addon-async)
+* [Conque Shell Plugin](http://code.google.com/p/conque)
+* [VimProc Plugin](http://github.com/Shougo/vimproc/tree/master/doc/vimproc.txt)
+
+## Copyright
+© Marcin Szamotulski, 2012-2014
+
+## License
+Vim license, see :help license
+
