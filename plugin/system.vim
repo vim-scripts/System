@@ -13,34 +13,36 @@ endif
 
 fun! WrapCmdLine(dispatcher) " {{{
     " a:dispatcher: is crdispatcher#CRDispatcher dict
+    let a:dispatcher.state = 1
     if a:dispatcher.cmdtype !=# ':' || a:dispatcher.ctrl_f
 	" Do not fire with <c-f>
 	return
     endif
-    let cmdline = a:dispatcher.cmdline
+    let cmd = a:dispatcher.cmd
+    let cmdline = cmd.cmd
     " Add cmdline to the history
     if cmdline[0:1] == "! "  
-	let cmd = cmdline[2:]
+	let _cmd = cmdline[2:]
 	call histadd(":", cmdline)
 	if g:system_expand
-	    let cmd_split = split(cmd, '\ze\\\@<!%')
-	    let cmd = ""
+	    let cmd_split = split(_cmd, '\ze\\\@<!%')
+	    let _cmd = ""
 	    for hunk in cmd_split
 		if hunk[0] == '%'
 		    let m = matchstr(hunk, '^%\%(:[p8~.htre]\|:g\=s?[^?]*?[^?]*?\)*')
 		    let exp = expand(m)
-		    let cmd .=exp.hunk[len(m):]
+		    let _cmd .=exp.hunk[len(m):]
 		else
-		    let cmd .=hunk
+		    let _cmd .=hunk
 		endif
 	    endfor
 	endif
-	let cmd = escape(cmd, "\"")
-	let his = "|call histdel(':', -1)"
+	let _cmd = escape(_cmd, "\"")
+	let _his = "|call histdel(':', -1)"
 	if g:system_echocmd
-	    let a:dispatcher.cmdline = "echo \"".cmd."\n\".system(\"".cmd."\")".his
+	    let cmd.cmd = "echo \""._cmd."\n\".system(\""._cmd."\")"._his
 	else
-	    let a:dispatcher.cmdline = "echo system(\"".cmd."\")".his
+	    let cmd.cmd = "echo system(\""._cmd."\")"._his
 	endif
     endif
 endfun " }}}
@@ -48,7 +50,7 @@ try
     call add(crdispatcher#CRDispatcher['callbacks'], function('WrapCmdLine'))
 catch /E121:/
     echohl ErrorMsg
-    echom 'System Vim Plugin: please install "https://github.com/coot/CRDispatcher".'
+    echom 'System Plugin: please install "https://github.com/coot/CRDispatcher".'
     echohl Normal
     finish
 endtry
